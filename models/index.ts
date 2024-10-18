@@ -2,11 +2,26 @@ import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
-// prisma.player.create({
-//     data:{
+function addPlayer(discordId : string,discordName : string,){
+    prisma.player.create({
+        data:{
 
-//     },
-//     select:{
+        },
+        select:{
 
-//     }
-// })
+        }
+    })
+}
+
+function createGame(){
+
+}
+
+function addMoves(){
+
+}
+
+function updateGameHistory(){
+
+}
+
