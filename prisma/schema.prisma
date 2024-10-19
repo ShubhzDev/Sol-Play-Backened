@@ -13,40 +13,51 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model Game{
-  gameId Int @id @default(autoincrement())
-  players Player[]
-  gameHistory GameHistory
-  // winner Player,
+model Game {
+  gameId      Int          @id @default(autoincrement())
+  players     Player[]     @relation("GamePlayers")
+  gameHistory GameHistory?
+  gameType    String?
+  winner      GameWinner[] @relation("GameWinners")
 }
 
-model Player{
-  id Int @id @default(autoincrement())
-  discordId String @unique
-  discordName String @unique
-  userName String @unique
-  playerName String
-  game Game @relation(fields:[id],references:[gameId])
-  moves Moves[]
+model GameWinner {
+  gameId      Int
+  game        Game   @relation("GameWinners", fields: [gameId], references: [gameId])
+  discordId   String @unique
+  discordName String
+  userName    String
+  playerName  String
 }
 
-model GameHistory{
-  gameId Int
-  game Game @relation(fields:[gameId],references:[gameId])
-  moves Moves[]
+model Player {
+  id          Int     @id @default(autoincrement())
+  discordId   String  @unique
+  discordName String
+  userName    String
+  playerName  String
+  games       Game[]  @relation("GamePlayers")
+  moves       Moves[] @relation("PlayerMoves")
 }
 
-model Moves{
-  id Int @id @default(autoincrement())
-  playerId Int
-  player Player @relation(fields:[playerId],references: [id])
-  card Card[]
-  gameHistoryId  Int
-  gameHistory GameHistory @relation(fields: [gameHistoryId], references: [gameHistoryId])
+model GameHistory {
+  gameId Int     @unique
+  game   Game    @relation(fields: [gameId], references: [gameId])
+  moves  Moves[]
 }
 
-model Card{
-  id String @id @unique
+model Moves {
+  id          Int         @id @default(autoincrement())
+  gameId      Int
+  gameHistory GameHistory @relation(fields: [gameId], references: [gameId])
+  player      Player      @relation("PlayerMoves", fields: [playerId], references: [id])
+  card        Card        @relation(fields: [cardId], references: [id])
+  playerId    Int
+  cardId      String
+}
+
+model Card {
+  id       String  @id @unique
   cardName String
-  moves Moves[]
+  moves    Moves[]
 }
