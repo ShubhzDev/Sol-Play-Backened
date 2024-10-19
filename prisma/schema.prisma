@@ -16,7 +16,8 @@ datasource db {
 model Game{
   gameId Int @id @default(autoincrement())
   players Player[]
-  gameHistory GameHistory[]
+  gameHistory GameHistory
+  // winner Player,
 }
 
 model Player{
@@ -30,7 +31,6 @@ model Player{
 }
 
 model GameHistory{
-  gameHistoryId Int @id @default(autoincrement())
   gameId Int
   game Game @relation(fields:[gameId],references:[gameId])
   moves Moves[]
