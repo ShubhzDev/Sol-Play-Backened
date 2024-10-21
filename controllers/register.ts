@@ -1,31 +1,39 @@
-import {Request,Response} from "express";
+import { Request, Response } from "express";
 import { addPlayer } from "../db/crud";
 
-const registration = async(res : Response,req : Request) =>{
-    const discord_id = req.body.discord_id;
-    const discord_name = req.body.discord_name;
-    const user_name = req.body.user_name;
-    const player_name = req.body.player_name;
+const registration = async (req: Request, res: Response) => {
+  const { discord_id, discord_name, user_name, player_name } =
+    req.body;
 
-    if(!discord_id){
-        return res.status(500).send({message:"discord_id is missing!"});
-    }
+  if (!discord_id) {
+    res.status(400).send({ message: "discord_id is missing!" });
+    return;
+  }
 
+  if (!discord_name) {
+    res.status(400).send({ message: "discord_name is missing!" });
+    return;
+  }
 
-    if(!discord_name){
-        return res.status(500).send({message:"discord_name is missing!"});
-    }
+  if (!user_name) {
+    res.status(400).send({ message: "user_name is missing!" });
+    return;
+  }
 
+  if (!player_name) {
+    res.status(400).send({ message: "player_name is missing!" });
+    return;
+  }
 
-    if(!user_name){
-        return res.status(500).send({message:"user_name is missing!"});
-    }
+  const player = await addPlayer(discord_id,discord_name,user_name,player_name);
+  if(!player){
+    res.status(500).send({message:"Unable to Register Player!"});
+    return;
+  }
 
-    if(!player_name){
-        return res.status(500).send({message:"player_name is missing!"});
-    }
+  console.log("player : ",player);
 
-    addPlayer(discord_id,discord_name,user_name,player_name);
+  res.status(200).send(player);
+};
 
-}
-
+export default registration;

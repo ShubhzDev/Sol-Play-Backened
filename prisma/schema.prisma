@@ -22,12 +22,12 @@ model Game {
 }
 
 model GameWinner {
-  gameId      Int
+  gameId      Int   @unique
   game        Game   @relation("GameWinners", fields: [gameId], references: [gameId])
-  discordId   String @unique
+  discordId   String
   discordName String
   userName    String
-  playerName  String
+  name  String
 }
 
 model Player {
@@ -35,7 +35,7 @@ model Player {
   discordId   String  @unique
   discordName String
   userName    String
-  playerName  String
+  name  String
   games       Game[]  @relation("GamePlayers")
   moves       Moves[] @relation("PlayerMoves")
 }
@@ -53,11 +53,11 @@ model Moves {
   player      Player      @relation("PlayerMoves", fields: [playerId], references: [id])
   card        Card        @relation(fields: [cardId], references: [id])
   playerId    Int
-  cardId      String
+  cardId      Int
 }
 
 model Card {
-  id       String  @id @unique
+  id       Int     @id @default(autoincrement())
   cardName String
   moves    Moves[]
 }

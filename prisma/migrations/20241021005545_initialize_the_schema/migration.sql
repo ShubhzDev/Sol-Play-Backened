@@ -12,7 +12,7 @@ CREATE TABLE "GameWinner" (
     "discordId" TEXT NOT NULL,
     "discordName" TEXT NOT NULL,
     "userName" TEXT NOT NULL,
-    "playerName" TEXT NOT NULL
+    "name" TEXT NOT NULL
 );
 
 -- CreateTable
@@ -21,7 +21,7 @@ CREATE TABLE "Player" (
     "discordId" TEXT NOT NULL,
     "discordName" TEXT NOT NULL,
     "userName" TEXT NOT NULL,
-    "playerName" TEXT NOT NULL,
+    "name" TEXT NOT NULL,
 
     CONSTRAINT "Player_pkey" PRIMARY KEY ("id")
 );
@@ -36,14 +36,14 @@ CREATE TABLE "Moves" (
     "id" SERIAL NOT NULL,
     "gameId" INTEGER NOT NULL,
     "playerId" INTEGER NOT NULL,
-    "cardId" TEXT NOT NULL,
+    "cardId" INTEGER NOT NULL,
 
     CONSTRAINT "Moves_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
 CREATE TABLE "Card" (
-    "id" TEXT NOT NULL,
+    "id" SERIAL NOT NULL,
     "cardName" TEXT NOT NULL,
 
     CONSTRAINT "Card_pkey" PRIMARY KEY ("id")
@@ -56,16 +56,13 @@ CREATE TABLE "_GamePlayers" (
 );
 
 -- CreateIndex
-CREATE UNIQUE INDEX "GameWinner_discordId_key" ON "GameWinner"("discordId");
+CREATE UNIQUE INDEX "GameWinner_gameId_key" ON "GameWinner"("gameId");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "Player_discordId_key" ON "Player"("discordId");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "GameHistory_gameId_key" ON "GameHistory"("gameId");
-
--- CreateIndex
-CREATE UNIQUE INDEX "Card_id_key" ON "Card"("id");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "_GamePlayers_AB_unique" ON "_GamePlayers"("A", "B");

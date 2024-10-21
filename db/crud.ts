@@ -1,5 +1,4 @@
-import { Game, Moves, Player, PrismaClient } from "@prisma/client";
-import { connect } from "http2";
+import { Game, GameHistory, GameWinner, Moves, Player, PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
@@ -7,41 +6,38 @@ export async function addPlayer(
   discordId: string,
   discordName: string,
   userName: string,
-  playerName: string
-) {
-  await prisma.player.create({
+  name: string
+) : Promise<Player> {
+  const player = await prisma.player.create({
     data: {
       discordId: discordId,
       discordName: discordName,
-      playerName: playerName,
+      name: name,
       userName: userName,
-    },
-    select: {
-      discordId: true,
-      discordName: true,
-      playerName: true,
-      userName: true,
-    },
+    }
   });
+
+  //add message if player already exist
+  return player;
 }
 
 /*
 When a player joins a game in discord:-
 it sends :-it's discord_id,game id and type of game.
 */
-async function joinGame(id: number, discordId: string) {
+export async function joinGame(id: number, discordId: string) : Promise<Game|null> {
   //check if player exists already in database
   const player = await prisma.player.findUnique({
     where: {
-      id: id,
+      discordId: discordId,
     },
   });
 
   if (!player) {
-    return;
+    return null;
   }
 
-  prisma.game.update({
+  const game = prisma.game.update({
     where: {
       gameId: id,
     },
@@ -51,13 +47,17 @@ async function joinGame(id: number, discordId: string) {
       },
     },
   });
+
+  return game;
+
+  //add message if player is already a part of game
 }
 
 /*
 When a player create a game in discord:-
 it sends :-it's discord_id,and type of game.
 */
-export async function createGame(discordId: string, gameType: string) {
+export async function createGame(discordId: string, gameType: string) : Promise<Game|null>{
   //check if player exists already in database
   const player = await prisma.player.findUnique({
     where: {
@@ -66,10 +66,10 @@ export async function createGame(discordId: string, gameType: string) {
   });
 
   if (!player) {
-    return;
+    return null;
   }
 
-  prisma.game.create({
+  const game = await prisma.game.create({
     data: {
       players: {
         connect: { id: player.id },
@@ -77,41 +77,85 @@ export async function createGame(discordId: string, gameType: string) {
       gameType: gameType,
     },
   });
+
+  return game;
 }
 
 /*
 When a player plays a move in discord:-
 it sends :-it's game_id,card_id and move
 */
-async function updateGameHistory(gameId: number, cardId: string,move : Moves) {
+export async function updateGameHistory(
+  gameId: number,
+  cardId: number,
+  move: Moves
+) : Promise<GameHistory|null>{
   const card = await prisma.card.findUnique({
-    where:{
-      id:cardId,
-    }
+    where: {
+      id: cardId,
+    },
   });
 
-  if(!card){
-    return;
+  if (!card) {
+    return null;
   }
 
   const game = await prisma.game.findUnique({
-    where:{
-      gameId:gameId,
-    }
+    where: {
+      gameId: gameId,
+    },
   });
 
-  if(!game){
-    return;
+  if (!game) {
+    return null;
   }
 
-  await prisma.gameHistory.update({
-    where:{
-      gameId : gameId,
+  const gameHistory = await prisma.gameHistory.update({
+    where: {
+      gameId: gameId,
     },
-    data:{
-      moves:{
-        connect : {id : move.id}
-      }
+    data: {
+      moves: {
+        connect: { id: move.id },
+      },
+    },
+  });
+
+  return gameHistory;
+
+}
+
+export async function updateWinner(playerId: number, gameId: number) : Promise<GameWinner | null> {
+  const player = await prisma.player.findUnique({
+    where: {
+      id: playerId,
+    },
+    select: {
+      discordName: true,
+      discordId: true,
+      userName: true,
+      name: true,
+    },
+  });
+
+  if (!player) {
+    return null;
+  }
+
+  const winner = await prisma.gameWinner.update({
+    where: {
+      gameId: gameId,
+    },
+    data: {
+      gameId: gameId,
+      discordId: player.discordId,
+      discordName: player.discordName,
+      userName: player.userName,
+      name: player.name,
     }
   });
+
+  return winner;
+
+
 }
