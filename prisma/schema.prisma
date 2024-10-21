@@ -15,49 +15,51 @@ datasource db {
 
 model Game {
   gameId      Int          @id @default(autoincrement())
-  players     Player[]     @relation("GamePlayers")
+  players     Player[]
   gameHistory GameHistory?
-  gameType    String?
-  winner      GameWinner[] @relation("GameWinners")
+  winner      Winner?
 }
 
-model GameWinner {
-  gameId      Int   @unique
-  game        Game   @relation("GameWinners", fields: [gameId], references: [gameId])
+model Winner {
+  id          Int    @id @default(autoincrement())
+  gameId      Int    @unique
   discordId   String
   discordName String
   userName    String
-  name  String
+  name        String
+  game        Game   @relation(fields: [gameId], references: [gameId])
 }
 
 model Player {
-  id          Int     @id @default(autoincrement())
-  discordId   String  @unique
+  id          Int    @id @default(autoincrement())
+  discordId   String @unique
   discordName String
   userName    String
-  name  String
-  games       Game[]  @relation("GamePlayers")
-  moves       Moves[] @relation("PlayerMoves")
+  name        String
+  gameId      Int
+  game        Game   @relation(fields: [gameId], references: [gameId])
+  moves       Move[]
 }
 
 model GameHistory {
-  gameId Int     @unique
-  game   Game    @relation(fields: [gameId], references: [gameId])
-  moves  Moves[]
+  id     Int    @id @default(autoincrement())
+  gameId Int    @unique
+  game   Game   @relation(fields: [gameId], references: [gameId])
+  moves  Move[]
 }
 
-model Moves {
-  id          Int         @id @default(autoincrement())
-  gameId      Int
-  gameHistory GameHistory @relation(fields: [gameId], references: [gameId])
-  player      Player      @relation("PlayerMoves", fields: [playerId], references: [id])
-  card        Card        @relation(fields: [cardId], references: [id])
-  playerId    Int
-  cardId      Int
+model Move {
+  id            Int         @id @default(autoincrement())
+  playerId      Int
+  player        Player      @relation(fields: [playerId], references: [id])
+  cardId        Int
+  card          Card        @relation(fields: [cardId], references: [id])
+  gameHistoryId Int
+  gameHistory   GameHistory @relation(fields: [gameHistoryId], references: [id])
 }
 
 model Card {
-  id       Int     @id @default(autoincrement())
+  id       Int    @id @default(autoincrement())
   cardName String
-  moves    Moves[]
+  moves    Move[]
 }
