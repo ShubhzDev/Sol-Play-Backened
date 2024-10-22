@@ -13,17 +13,29 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum GameType{
+  UNO
+}
+
+enum GameStatus{
+  ACTIVE
+  FINISHED
+  PENDING
+}
+
 model Game {
   gameId      Int          @id @default(autoincrement())
   players     Player[]
   gameHistory GameHistory?
   winner      Winner?
+  gameType GameType
+  gameStatus GameStatus @default(ACTIVE)
 }
 
 model Winner {
   id          Int    @id @default(autoincrement())
   gameId      Int    @unique
-  discordId   String
+  discordId   String  @unique
   discordName String
   userName    String
   name        String
@@ -36,8 +48,7 @@ model Player {
   discordName String
   userName    String
   name        String
-  gameId      Int
-  game        Game   @relation(fields: [gameId], references: [gameId])
+  game        Game[]
   moves       Move[]
 }
 
@@ -52,7 +63,7 @@ model Move {
   id            Int         @id @default(autoincrement())
   playerId      Int
   player        Player      @relation(fields: [playerId], references: [id])
-  cardId        Int
+  cardId        Int         @unique
   card          Card        @relation(fields: [cardId], references: [id])
   gameHistoryId Int
   gameHistory   GameHistory @relation(fields: [gameHistoryId], references: [id])

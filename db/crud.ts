@@ -1,4 +1,5 @@
-import { Game, GameHistory, GameWinner, Moves, Player, PrismaClient } from "@prisma/client";
+import { Game, GameHistory, Winner, Move, Player, PrismaClient, GameType } from "@prisma/client";
+import { connect } from "http2";
 
 const prisma = new PrismaClient();
 
@@ -8,6 +9,17 @@ export async function addPlayer(
   userName: string,
   name: string
 ) : Promise<Player> {
+
+  const existingPlayer = await prisma.player.findUnique({
+    where: {
+      discordId: discordId,
+    },
+  });
+
+  if (existingPlayer) {
+    return existingPlayer;
+  }
+
   const player = await prisma.player.create({
     data: {
       discordId: discordId,
@@ -17,7 +29,6 @@ export async function addPlayer(
     }
   });
 
-  //add message if player already exist
   return player;
 }
 
@@ -36,6 +47,7 @@ export async function joinGame(id: number, discordId: string) : Promise<Game|nul
   if (!player) {
     return null;
   }
+
 
   const game = prisma.game.update({
     where: {
@@ -57,15 +69,34 @@ export async function joinGame(id: number, discordId: string) : Promise<Game|nul
 When a player create a game in discord:-
 it sends :-it's discord_id,and type of game.
 */
-export async function createGame(discordId: string, gameType: string) : Promise<Game|null>{
+export async function createGame(discordId: string, gameType: GameType) : Promise<Game|null>{
   //check if player exists already in database
   const player = await prisma.player.findUnique({
     where: {
       discordId: discordId,
     },
+    include:{
+      game:true,
+    }
   });
 
   if (!player) {
+    return null;
+  }
+
+  const activeGames = await prisma.game.findMany({
+    where:{
+      players:{
+        some:{
+          id:player.id,
+        }
+      },
+      gameStatus:"ACTIVE",
+    }
+  });
+
+  if(activeGames.length > 0){
+    //send message that player is already a part of an active game.
     return null;
   }
 
@@ -88,7 +119,7 @@ it sends :-it's game_id,card_id and move
 export async function updateGameHistory(
   gameId: number,
   cardId: number,
-  move: Moves
+  move: Move
 ) : Promise<GameHistory|null>{
   const card = await prisma.card.findUnique({
     where: {
@@ -110,13 +141,33 @@ export async function updateGameHistory(
     return null;
   }
 
+  const newMove = await prisma.move.create({
+    data:{
+      player:{
+        connect:{
+          id:move.playerId
+        }
+      },
+      card:{
+        connect:{
+          id:move.cardId
+        }
+      },
+      gameHistory :{
+        connect:{
+          id:move.gameHistoryId
+        }
+      },
+    }
+  })
+
   const gameHistory = await prisma.gameHistory.update({
     where: {
       gameId: gameId,
     },
     data: {
       moves: {
-        connect: { id: move.id },
+        connect: { id: newMove.id },
       },
     },
   });
@@ -125,7 +176,7 @@ export async function updateGameHistory(
 
 }
 
-export async function updateWinner(playerId: number, gameId: number) : Promise<GameWinner | null> {
+export async function updateWinner(playerId: number, gameId: number) : Promise<Winner | null> {
   const player = await prisma.player.findUnique({
     where: {
       id: playerId,
@@ -142,10 +193,7 @@ export async function updateWinner(playerId: number, gameId: number) : Promise<G
     return null;
   }
 
-  const winner = await prisma.gameWinner.update({
-    where: {
-      gameId: gameId,
-    },
+  const winner = await prisma.winner.create({
     data: {
       gameId: gameId,
       discordId: player.discordId,
