@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import Winner from "../models/Winner";
 import Player from "../models/Player";
 import Game from "../models/Game";
+import { GameStatus } from "../models/types";
 
 export const winner = async (req: Request, res: Response) => {
   const { player_id, game_id } = req.body;
@@ -34,8 +35,8 @@ export const winner = async (req: Request, res: Response) => {
     });
 
     // Update game status
-    game.gameStatus = "FINISHED";
-    game.winner = winner._id;
+    game.gameStatus = GameStatus.FINISHED;
+    game.winner = winner._id.toString();
     await game.save();
 
     res.status(200).send(winner);

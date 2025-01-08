@@ -25,7 +25,7 @@ export interface IGame {
 }
 
 export interface IWinner {
-  gameId: string;
+  gameId: string | undefined;
   discordId: string;
   discordName: string;
   userName: string;
@@ -33,14 +33,14 @@ export interface IWinner {
 }
 
 export interface IGameHistory {
-  gameId: string;
+  gameId: string | undefined;
   moves: string[];
 }
 
 export interface IMove {
-  playerId: string;
-  cardId: string;
-  gameHistoryId: string;
+  playerId: string | undefined;
+  cardId: string | undefined;
+  gameHistoryId: string | undefined;
 }
 
 export interface ICard {

@@ -1,7 +1,7 @@
-import { Request, Response } from "express";
+import { NextFunction, Request, Response } from "express";
 import Player from "../models/Player";
 
-export const registration = async (req: Request, res: Response) => {
+const registration = async (req: Request, res: Response) => {
   const { discord_id, discord_name, user_name, player_name } = req.body;
 
   if (!discord_id) {

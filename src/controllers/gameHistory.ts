@@ -35,7 +35,7 @@ export const gameHistory = async (req: Request, res: Response) => {
       gameHistoryId: history._id
     });
 
-    history.moves.push(newMove._id);
+    history.moves.push(newMove._id.toString());
     await history.save();
 
     res.status(200).send(history);
