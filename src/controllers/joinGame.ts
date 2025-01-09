@@ -24,12 +24,12 @@ export const gameJoin = async (req: Request, res: Response) => {
       return res.status(404).send({ message: "Game not found!" });
     }
 
-    if (game.players.includes(player._id)) {
+    if (game.players.includes(player._id.toString())) {
       return res.status(400).send({ message: "Player already in game!" });
     }
 
     // Add player to game
-    game.players.push(player._id);
+    game.players.push(player._id.toString());
     await game.save();
 
     // Add game to player's games
