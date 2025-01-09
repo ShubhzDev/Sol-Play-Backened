@@ -1,18 +1,31 @@
-// import express from "express";
-// import cors from "cors";
-// import bodyParser = require("body-parser");
-// import * as dotenv from "dotenv"
-// import router from ".src//routes/routes"
-// dotenv.config();
+import express from "express";
+import cors from "cors";
+import bodyParser from "body-parser";
+import mongoose from "mongoose";
+import dotenv from "dotenv";
+import router from "./src/routes/routes";
+import { initializeCards } from "./src/utils/initializeCards";
 
-// const app = express();
-// app.use(cors());
-// app.use(bodyParser.json());
+dotenv.config();
 
-// app.use("/api",router);
+const app = express();
+app.use(cors());
+app.use(bodyParser.json());
 
-// const PORT = process.env.PORT;
+app.use("/api", router);
 
-// app.listen(PORT,()=>{
-//     console.log(`Server is running on http://localhost:${PORT}`)
-// },)
+const PORT = process.env.PORT || 3000;
+const MONGODB_URI = process.env.MONGODB_URI || "mongodb://localhost:27017/solplay";
+
+mongoose.connect(MONGODB_URI)
+  .then(async () => {
+    console.log("Connected to MongoDB");
+    // Initialize cards when server starts
+    await initializeCards();
+    app.listen(PORT, () => {
+      console.log(`Server is running on http://localhost:${PORT}`);
+    });
+  })
+  .catch((error) => {
+    console.error("MongoDB connection error:", error);
+  });
