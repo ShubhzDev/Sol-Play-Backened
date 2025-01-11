@@ -2,6 +2,8 @@
 //   UNO = 'UNO'
 // }
 
+import mongoose from "mongoose";
+
 // export enum GameStatus {
 //   ACTIVE = 'ACTIVE',
 //   FINISHED = 'FINISHED',
@@ -99,10 +101,11 @@ export interface IGameState {
 }
 
 export interface IMove {
-  playerId: string;
+  playerId: mongoose.Types.ObjectId;
   moveType: MoveType;
   cardId?: string; // Optional for DRAW and PASS moves
   gameId: string;
   timestamp: Date;
+  gameHistoryId : mongoose.Types.ObjectId;
 }
 
